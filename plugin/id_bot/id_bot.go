@@ -7,11 +7,11 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-type IdBot struct {
+type Bot struct {
 	plugin.BasePlugin
 }
 
-func (b *IdBot) Register(bot plugin.TelegramBot) {
+func (b *Bot) Register(bot plugin.TelegramBot) {
 	bot.Handle("/id", func(m *tb.Message) {
 		if !m.Private() {
 			return
@@ -20,6 +20,6 @@ func (b *IdBot) Register(bot plugin.TelegramBot) {
 	})
 }
 
-func NewIdBot() *IdBot {
-	return new(IdBot)
+func NewBot() *Bot {
+	return new(Bot)
 }
