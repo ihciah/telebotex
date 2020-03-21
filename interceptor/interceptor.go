@@ -3,13 +3,14 @@ package interceptor
 import (
 	"log"
 
+	"github.com/ihciah/telebotex/bot"
 	"github.com/ihciah/telebotex/plugin"
 	jsoniter "github.com/json-iterator/go"
 )
 
 type Interceptor interface {
 	LoadConfig(map[string]jsoniter.RawMessage) error
-	Wrap(plugin.TelegramBot) plugin.TelegramBot
+	Wrap(bot.TelegramBotExt) bot.TelegramBotExt
 }
 
 type BaseInterceptor struct{}
@@ -19,7 +20,7 @@ func (b *BaseInterceptor) LoadConfig(_ map[string]jsoniter.RawMessage) error {
 	return nil
 }
 
-func (b *BaseInterceptor) Wrap(plugin.TelegramBot) plugin.TelegramBot {
+func (b *BaseInterceptor) Wrap(_ bot.TelegramBotExt) bot.TelegramBotExt {
 	log.Panic("Wrap interface is not implemented")
 	return nil
 }

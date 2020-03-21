@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/ihciah/telebotex"
-	"github.com/ihciah/telebotex/plugin"
+	"github.com/ihciah/telebotex/bot"
 	jsoniter "github.com/json-iterator/go"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
@@ -27,34 +27,65 @@ func (a *Authenticator) LoadConfig(config map[string]jsoniter.RawMessage) error 
 	return err
 }
 
-func (a *Authenticator) Wrap(bot plugin.TelegramBot) plugin.TelegramBot {
+func (a *Authenticator) Wrap(bot bot.TelegramBotExt) bot.TelegramBotExt {
 	admins := make(map[int]struct{}, len(a.Admin))
 	for _, id := range a.Admin {
 		admins[id] = struct{}{}
 	}
 	return &botWrapped{
-		TelegramBot: bot,
-		admins:      admins,
+		TelegramBotExt: bot,
+		admins:         admins,
 	}
 }
 
 type botWrapped struct {
-	plugin.TelegramBot
+	bot.TelegramBotExt
 	admins map[int]struct{}
 }
 
 func (b *botWrapped) Handle(endpoint interface{}, handler interface{}) {
-	if handlerFunc, ok := handler.(func(m *tb.Message)); ok {
-		b.TelegramBot.Handle(endpoint, func(m *tb.Message) {
+	switch h := handler.(type) {
+	case func(m *tb.Message):
+		b.TelegramBotExt.Handle(endpoint, func(m *tb.Message) {
 			if _, ok := b.admins[m.Sender.ID]; ok {
-				handlerFunc(m)
+				h(m)
 			} else {
 				msg := fmt.Sprintf("Unauthorized user %d", m.Sender.ID)
 				log.Print(msg)
 				_, _ = b.Send(m.Sender, msg)
 			}
 		})
-	} else {
+	case func(c *tb.Callback):
+		b.TelegramBotExt.Handle(endpoint, func(c *tb.Callback) {
+			if _, ok := b.admins[c.Sender.ID]; ok {
+				h(c)
+			} else {
+				msg := fmt.Sprintf("Unauthorized user %d", c.Sender.ID)
+				log.Print(msg)
+				_, _ = b.Send(c.Sender, msg)
+			}
+		})
+	case func(q *tb.Query):
+		b.TelegramBotExt.Handle(endpoint, func(q *tb.Query) {
+			if _, ok := b.admins[q.From.ID]; ok {
+				h(q)
+			} else {
+				msg := fmt.Sprintf("Unauthorized user %d", q.From.ID)
+				log.Print(msg)
+				_, _ = b.Send(&q.From, msg)
+			}
+		})
+	case func(c *tb.ChosenInlineResult):
+		b.TelegramBotExt.Handle(endpoint, func(c *tb.ChosenInlineResult) {
+			if _, ok := b.admins[c.From.ID]; ok {
+				h(c)
+			} else {
+				msg := fmt.Sprintf("Unauthorized user %d", c.From.ID)
+				log.Print(msg)
+				_, _ = b.Send(&c.From, msg)
+			}
+		})
+	default:
 		log.Print("handler signature is not supported")
 	}
 }

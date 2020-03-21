@@ -4,14 +4,14 @@ import (
 	"log"
 	"time"
 
+	"github.com/ihciah/telebotex/bot"
 	"github.com/ihciah/telebotex/interceptor"
 	"github.com/ihciah/telebotex/plugin"
 	jsoniter "github.com/json-iterator/go"
-	tb "gopkg.in/tucnak/telebot.v2"
 )
 
 type Bot struct {
-	plugin.TelegramBot
+	bot.TelegramBotExt
 	configs map[string]jsoniter.RawMessage
 }
 
@@ -30,9 +30,9 @@ func NewBot(configFile string, retry bool) (*Bot, error) {
 	}
 	log.Print("telegram config loading successfully")
 
-	var bot *tb.Bot
+	var b *botExt
 	for {
-		bot, err = newTelegramBot(telegramConfig)
+		b, err = newTelegramBotExt(telegramConfig)
 		if !retry || err == nil {
 			log.Print("telegram bot creating successfully")
 			break
@@ -46,17 +46,17 @@ func NewBot(configFile string, retry bool) (*Bot, error) {
 		return nil, err
 	}
 	return &Bot{
-		TelegramBot: bot,
-		configs:     config,
+		TelegramBotExt: b,
+		configs:        config,
 	}, nil
 }
 
 func MustNewBot(configFile string) *Bot {
-	bot, err := NewBot(configFile, true)
+	b, err := NewBot(configFile, true)
 	if err != nil {
 		panic(err)
 	}
-	return bot
+	return b
 }
 
 func (b *Bot) Register(plugins ...plugin.Plugin) error {
@@ -68,7 +68,7 @@ func (b *Bot) Register(plugins ...plugin.Plugin) error {
 			log.Print("plugin config loading successfully")
 		}
 		if intercepted, ok := p.(*interceptor.InterceptedPlugin); ok {
-			wrap := b.TelegramBot
+			wrap := b.TelegramBotExt
 			for _, i := range intercepted.Interceptors {
 				wrap = i.Wrap(wrap)
 			}
@@ -92,5 +92,5 @@ func (b *Bot) InitInterceptor(interceptors ...interceptor.Interceptor) error {
 
 func (b *Bot) Start() {
 	log.Print("bot start")
-	b.TelegramBot.Start()
+	b.TelegramBotExt.Start()
 }

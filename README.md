@@ -3,6 +3,7 @@
 Telegram bot framework based on [telebot](https://gopkg.in/tucnak/telebot.v2).
 
 ## Features
-- Register multiple handler in plugin mode
-- Add interceptor over plugin
+- Register multiple handlers in plugin mode
+- Add interceptor to plugin
 - Configuration loading
+- Conditional handler
