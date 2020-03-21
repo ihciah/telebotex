@@ -9,7 +9,7 @@ import (
 func main() {
 	bot := telebotex.MustNewBot("config.json")
 	plugins := []plugin.Plugin{
-		id_bot.NewIdBot(),
+		id_bot.NewBot(),
 	}
 
 	err := bot.Register(plugins...)

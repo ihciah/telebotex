@@ -13,7 +13,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	plugin := interceptor.NewInterceptedPlugin(id_bot.NewIdBot(), authInterceptor)
+	plugin := interceptor.NewInterceptedPlugin(id_bot.NewBot(), authInterceptor)
 
 	if err := bot.Register(plugin); err != nil {
 		panic(err)
