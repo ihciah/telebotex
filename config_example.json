@@ -1,0 +1,10 @@
+{
+  "telegram": {
+    "token": "",
+    "url": "",
+    "poll_timeout": 10
+  },
+  "authenticator": {
+    "admin": [259444514]
+  }
+}
