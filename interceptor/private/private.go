@@ -1,3 +1,7 @@
+/*
+PrivateChatFilter interceptor will filter out non-private chat
+*/
+
 package private
 
 import (
@@ -35,6 +39,21 @@ func (b *botWrapped) Handle(endpoint interface{}, handler interface{}) {
 				log.Print(msg)
 			}
 		})
+	} else {
+		log.Print("handler signature is not supported")
+	}
+}
+
+func (b *botWrapped) ConditionalHandle(endpoint interface{}, handler interface{}, condFunc interface{}) {
+	if handlerFunc, ok := handler.(func(m *tb.Message)); ok {
+		b.TelegramBotExt.ConditionalHandle(endpoint, func(m *tb.Message) {
+			if m.Private() {
+				handlerFunc(m)
+			} else {
+				msg := fmt.Sprintf("Non-private chat %d", m.Sender.ID)
+				log.Print(msg)
+			}
+		}, condFunc)
 	} else {
 		log.Print("handler signature is not supported")
 	}
